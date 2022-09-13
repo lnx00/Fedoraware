@@ -14,7 +14,10 @@
 #include "Hash/FNV1A.h"
 #include "TFM/tfm.h"
 
+// WinAPI
 #include <Windows.h>
+#include <shellapi.h>
+
 #include <unordered_map>
 #include <memory>
 #include <stdexcept>

@@ -775,6 +775,8 @@
     <ClInclude Include="TeamFortress2\Features\NetVarHooks\NetVarHk.h" />
     <ClInclude Include="TeamFortress2\SDK\Interfaces\ICenterPrint\ICenterPrint.h" />
     <ClInclude Include="TeamFortress2\SDK\Interfaces\IOcclusionSystem\IOcclusionSystem.h" />
+    <ClInclude Include="TeamFortress2\Features\Fedworking\NullNexus\NullNexus.hpp" />
+    <ClInclude Include="TeamFortress2\Features\Fedworking\NullNexus\WebSocketClient.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="TeamFortress2\SDK\DirectX\d3dx9.lib" />

@@ -1,4 +1,5 @@
 #include "Fedworking.h"
+#include "NullNexus/NullNexus.hpp"
 #include "../Menu/Pong/Pong.h"
 #include "../../Utils/Base64/Base64.hpp"
 
