@@ -1,5 +1,4 @@
 #include "Fedworking.h"
-#include "NullNexus/NullNexus.hpp"
 #include "../Menu/Pong/Pong.h"
 #include "../../Utils/Base64/Base64.hpp"
 
@@ -175,8 +174,6 @@ void CFedworking::Run()
 
 void CFedworking::ConsoleLog(const std::string& pMessage)
 {
-	std::string consoleMsg = "[Fedworking] ";
-	consoleMsg.append(pMessage);
-	consoleMsg.append("\n");
+	const std::string consoleMsg = "[Fedworking] " + pMessage + "\n";
 	I::Cvar->ConsoleColorPrintf({ 225, 177, 44, 255 }, consoleMsg.c_str());
 }

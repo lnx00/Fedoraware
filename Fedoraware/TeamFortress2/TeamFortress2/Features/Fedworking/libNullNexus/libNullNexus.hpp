@@ -147,7 +147,7 @@ public:
         }
         boost::property_tree::ptree pt;
         // Set colour
-        if (newsettings.colour && *newsettings.colour != *settings.colour)
+        if (newsettings.colour)
         {
             settings.colour = *newsettings.colour;
             pt.put("colour", *settings.colour);

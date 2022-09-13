@@ -207,6 +207,7 @@
     <ClCompile Include="TeamFortress2\Hooks\Detours\DSP_Process.cpp" />
     <ClCompile Include="TeamFortress2\Hooks\Detours\DataTable_Warning.cpp" />
     <ClCompile Include="TeamFortress2\Hooks\Detours\COcclusionSystem_IsOccluded.cpp" />
+    <ClCompile Include="TeamFortress2\Features\Fedworking\NullNexus.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TeamFortress2\Features\AutoQueue\AutoQueue.h" />
@@ -775,8 +776,9 @@
     <ClInclude Include="TeamFortress2\Features\NetVarHooks\NetVarHk.h" />
     <ClInclude Include="TeamFortress2\SDK\Interfaces\ICenterPrint\ICenterPrint.h" />
     <ClInclude Include="TeamFortress2\SDK\Interfaces\IOcclusionSystem\IOcclusionSystem.h" />
-    <ClInclude Include="TeamFortress2\Features\Fedworking\NullNexus\NullNexus.hpp" />
-    <ClInclude Include="TeamFortress2\Features\Fedworking\NullNexus\WebSocketClient.h" />
+    <ClInclude Include="TeamFortress2\Features\Fedworking\libNullNexus\libNullNexus.hpp" />
+    <ClInclude Include="TeamFortress2\Features\Fedworking\libNullNexus\WebSocketClient.h" />
+    <ClInclude Include="TeamFortress2\Features\Fedworking\NullNexus.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="TeamFortress2\SDK\DirectX\d3dx9.lib" />

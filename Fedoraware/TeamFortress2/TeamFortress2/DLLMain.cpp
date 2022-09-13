@@ -11,6 +11,7 @@
 #include "Features/Menu/ConfigManager/ConfigManager.h"
 #include "Features/Menu/../AttributeChanger/AttributeChanger.h"
 #include "Features/Commands/Commands.h"
+#include "Features/Fedworking/NullNexus.h"
 
 #include "SDK/Includes/Enums.h"
 #include "Utils/Events/Events.h"
@@ -78,6 +79,7 @@ void Initialize()
 	g_ConVars.Init();
 	F::LuaEngine.Init();
 	F::Commands.Init();
+	F::NullNexus.Init();
 
 	InitRichPresence();
 }
@@ -91,6 +93,7 @@ void Uninitialize()
 
 	Sleep(100);
 
+	F::NullNexus.Disconnect();
 	g_Events.Destroy();
 	g_HookManager.Release();
 	g_PatchManager.Restore();
