@@ -1,11 +1,26 @@
 #include "NullNexus.h"
+#include "../Commands/Commands.h"
 
 static NullNexus nexus;
 static std::string serverSteamID = "";
 
-void OnMessage(std::string user, std::string msg, int color)
+void OnMessage(const std::string& user, const std::string& msg, int color)
 {
-	
+	if (msg.size() > 128 || user.size() > 32)
+	{
+		I::Cvar->ConsolePrintf("[NullNexus] Message or Username too long.");
+		return;
+	}
+
+	if (I::EngineClient->IsInGame())
+	{
+		const std::string chatMsg = tfm::format("\x07%06X[\x07%06XNullnexus\x07%06X] \x07%06X%s\x01: %s", 0x5e3252, 0xba3d9a, 0x5e3252, color, user, msg);
+		I::ClientModeShared->m_pChatElement->ChatPrintf(0, chatMsg.c_str());
+	}
+	else
+	{
+		I::Cvar->ConsoleColorPrintf(Vars::Menu::Colors::MenuAccent, "[Nullnexus] %s: %s\n", user.c_str(), msg.c_str());
+	}
 }
 
 void OnAuthedPlayers(std::vector<std::string> steamIDs)
@@ -21,7 +36,7 @@ void OnAuthedPlayers(std::vector<std::string> steamIDs)
 
 			MD5Value_t result;
 			std::string steamHash = std::to_string(playerInfo.friendsID) + playerInfo.name;
-			//MD5_ProcessSingleBuffer(steamHash.c_str(), strlen(steamHash.c_str()), result);
+			MD5_ProcessSingleBuffer(steamHash.c_str(), strlen(steamHash.c_str()), result);
 
 			std::stringstream hashStream;
 			hashStream << std::hex;
@@ -77,11 +92,9 @@ void CNullNexus::UpdateServer(NullNexus::UserSettings& settings)
 void CNullNexus::UpdateData()
 {
 	auto userName = g_SteamInterfaces.Friends002->GetPersonaName();
-	auto color = Utils::PackColor(Utils::RandIntSimple(0, 255) , Utils::RandIntSimple(0, 255), Utils::RandIntSimple(0, 255));
 
 	NullNexus::UserSettings settings;
 	settings.username = userName;
-	settings.colour = color;
 
 	// Tell nullnexus about the current server we are connected to.
 	UpdateServer(settings);
@@ -96,6 +109,10 @@ void CNullNexus::Init()
 	nexus.setHandlerAuthedplayers(OnAuthedPlayers);
 
 	nexus.connect("nullnexus.cathook.club", "3000", "/api/v1/client", true);
+
+	F::Commands.Register("nn_test", [](std::deque<std::string> args) {
+		nexus.sendChat("Hello, World!");
+	});
 }
 
 void CNullNexus::Disconnect()

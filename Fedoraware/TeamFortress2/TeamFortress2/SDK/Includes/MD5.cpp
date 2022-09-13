@@ -5,6 +5,8 @@
 //===========================================================================//
 
 #include "MD5.h"
+
+#include <cassert>
 #include <Windows.h>
 
 // The four core functions - F1 is optimized somewhat
@@ -236,6 +238,15 @@ void MD5Final(unsigned char digest[MD5_DIGEST_LENGTH], MD5Context_t *ctx)
 //			hashlen - 
 // Output : char
 //-----------------------------------------------------------------------------
+
+void MD5_ProcessSingleBuffer(const void* p, int len, MD5Value_t& md5Result)
+{
+	assert(len >= 0);
+	MD5Context_t ctx;
+	MD5Init(&ctx);
+	MD5Update(&ctx, (unsigned char const*)p, len);
+	MD5Final(md5Result.bits, &ctx);
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: generate pseudo random number from a seed number
