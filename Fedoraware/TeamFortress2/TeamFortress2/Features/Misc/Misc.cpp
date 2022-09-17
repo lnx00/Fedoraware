@@ -125,7 +125,7 @@ void CMisc::DetectChoke()
 void CMisc::LegJitter(CUserCmd* pCmd, CBaseEntity* pLocal)
 {
 	static bool pos = true;
-	const float scale = pLocal->IsDucking() ? 14.f : 2.f;
+	const float scale = pLocal->IsDucking() ? 14.f : 1.0f;
 	if (G::IsAttacking || G::ShouldShift || G::AntiAim.second) { return; }
 	if (pCmd->forwardmove == 0.f && pCmd->sidemove == 0.f && pLocal->GetVecVelocity().Length2D() < 10.f && Vars::AntiHack::AntiAim::LegJitter.Value/* && I::GlobalVars->tickcount % 2*/)
 	{
@@ -176,9 +176,13 @@ void CMisc::AntiBackstab(CBaseEntity* pLocal, CUserCmd* pCmd)
 
 	for (const auto& pEnemy : g_EntityCache.GetGroup(EGroupType::PLAYERS_ENEMIES))
 	{
-		if (!pEnemy || !pEnemy->IsAlive() || pEnemy->GetClassNum() != CLASS_SPY || pEnemy->IsCloaked() || pEnemy->IsAGhost())
+		if (!pEnemy || !pEnemy->IsAlive() || pEnemy->GetClassNum() != CLASS_SPY || pEnemy->IsCloaked() || pEnemy->IsAGhost() || pEnemy->GetFeignDeathReady())
 		{
 			continue;
+		}
+
+		if (CBaseCombatWeapon* pWeapon = pEnemy->GetActiveWeapon()){
+			if (pWeapon->GetWeaponID() != TF_WEAPON_KNIFE) { continue; }
 		}
 
 		Vec3 vEnemyPos = pEnemy->GetWorldSpaceCenter();

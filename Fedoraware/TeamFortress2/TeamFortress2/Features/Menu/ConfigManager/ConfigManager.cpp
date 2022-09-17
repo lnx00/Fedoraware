@@ -389,9 +389,7 @@ bool CConfigManager::SaveConfig(const std::string& configName)
 			{
 				SAVE_VAR(Vars::Triggerbot::Global::Active);
 				SAVE_VAR(Vars::Triggerbot::Global::TriggerKey);
-				SAVE_VAR(Vars::Triggerbot::Global::IgnoreInvlunerable);
-				SAVE_VAR(Vars::Triggerbot::Global::IgnoreCloaked);
-				SAVE_VAR(Vars::Triggerbot::Global::IgnoreFriends);
+				SAVE_VAR(Vars::Triggerbot::Global::IgnoreOptions);
 			}
 
 			//Shoot
@@ -452,7 +450,11 @@ bool CConfigManager::SaveConfig(const std::string& configName)
 				SAVE_VAR(Vars::ESP::Main::Active);
 				SAVE_VAR(Vars::ESP::Main::Outlinedbar);
 				SAVE_VAR(Vars::ESP::Main::EnableTeamEnemyColors);
+				SAVE_VAR(Vars::ESP::Main::DistanceToAlpha);
 				SAVE_VAR(Vars::ESP::Main::DormantSoundESP);
+				SAVE_VAR(Vars::ESP::Main::DormantTime);
+				SAVE_VAR(Vars::ESP::Main::DormantDist);
+				SAVE_VAR(Vars::ESP::Main::NetworkedDist);
 			}
 
 			//Players
@@ -909,6 +911,7 @@ bool CConfigManager::SaveConfig(const std::string& configName)
 			{
 				SAVE_VAR(Vars::AntiHack::AntiAim::Active);
 				SAVE_VAR(Vars::AntiHack::AntiAim::ToggleKey);
+				SAVE_VAR(Vars::AntiHack::AntiAim::InvertKey);
 				SAVE_VAR(Vars::AntiHack::AntiAim::Pitch);
 				SAVE_VAR(Vars::AntiHack::AntiAim::BaseYawMode);
 				SAVE_VAR(Vars::AntiHack::AntiAim::YawReal);
@@ -918,6 +921,8 @@ bool CConfigManager::SaveConfig(const std::string& configName)
 				SAVE_VAR(Vars::AntiHack::AntiAim::BaseYawOffset);
 				SAVE_VAR(Vars::AntiHack::AntiAim::CustomRealYaw);
 				SAVE_VAR(Vars::AntiHack::AntiAim::CustomFakeYaw);
+				SAVE_VAR(Vars::AntiHack::AntiAim::RealJitter);
+				SAVE_VAR(Vars::AntiHack::AntiAim::FakeJitter);
 				SAVE_VAR(Vars::AntiHack::AntiAim::RandInterval);
 				SAVE_VAR(Vars::AntiHack::AntiAim::AntiOverlap);
 				SAVE_VAR(Vars::AntiHack::AntiAim::AntiBackstab);
@@ -1203,9 +1208,7 @@ bool CConfigManager::LoadConfig(const std::string& configName)
 			{
 				LOAD_VAR(Vars::Triggerbot::Global::Active);
 				LOAD_VAR(Vars::Triggerbot::Global::TriggerKey);
-				LOAD_VAR(Vars::Triggerbot::Global::IgnoreInvlunerable);
-				LOAD_VAR(Vars::Triggerbot::Global::IgnoreCloaked);
-				LOAD_VAR(Vars::Triggerbot::Global::IgnoreFriends);
+				LOAD_VAR(Vars::Triggerbot::Global::IgnoreOptions);
 			}
 
 			//Shoot
@@ -1266,7 +1269,11 @@ bool CConfigManager::LoadConfig(const std::string& configName)
 				LOAD_VAR(Vars::ESP::Main::Active);
 				LOAD_VAR(Vars::ESP::Main::Outlinedbar);
 				LOAD_VAR(Vars::ESP::Main::EnableTeamEnemyColors);
+				LOAD_VAR(Vars::ESP::Main::DistanceToAlpha);
 				LOAD_VAR(Vars::ESP::Main::DormantSoundESP);
+				LOAD_VAR(Vars::ESP::Main::DormantTime);
+				LOAD_VAR(Vars::ESP::Main::DormantDist);
+				LOAD_VAR(Vars::ESP::Main::NetworkedDist);
 			}
 
 			//Players
@@ -1723,6 +1730,7 @@ bool CConfigManager::LoadConfig(const std::string& configName)
 			{
 				LOAD_VAR(Vars::AntiHack::AntiAim::Active);
 				LOAD_VAR(Vars::AntiHack::AntiAim::ToggleKey);
+				LOAD_VAR(Vars::AntiHack::AntiAim::InvertKey);
 				LOAD_VAR(Vars::AntiHack::AntiAim::Pitch);
 				LOAD_VAR(Vars::AntiHack::AntiAim::BaseYawMode);
 				LOAD_VAR(Vars::AntiHack::AntiAim::YawReal);
@@ -1732,6 +1740,8 @@ bool CConfigManager::LoadConfig(const std::string& configName)
 				LOAD_VAR(Vars::AntiHack::AntiAim::BaseYawOffset);
 				LOAD_VAR(Vars::AntiHack::AntiAim::CustomRealYaw);
 				LOAD_VAR(Vars::AntiHack::AntiAim::CustomFakeYaw);
+				LOAD_VAR(Vars::AntiHack::AntiAim::RealJitter);
+				LOAD_VAR(Vars::AntiHack::AntiAim::FakeJitter);
 				LOAD_VAR(Vars::AntiHack::AntiAim::RandInterval);
 				LOAD_VAR(Vars::AntiHack::AntiAim::AntiOverlap);
 				LOAD_VAR(Vars::AntiHack::AntiAim::AntiBackstab);
