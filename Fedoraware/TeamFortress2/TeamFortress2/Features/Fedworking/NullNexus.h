@@ -3,7 +3,6 @@
 #include "libNullNexus/libNullNexus.hpp"
 
 class CNullNexus {
-	void UpdateServer(NullNexus::UserSettings& settings);
 	void UpdateData();
 
 public:

@@ -90,10 +90,10 @@ void Uninitialize()
 	G::UnloadWndProcHook = true;
 	Vars::Visuals::SkyboxChanger.Value = false;
 	Vars::Visuals::ThirdPerson.Value = false;
+	F::NullNexus.Disconnect();
 
 	Sleep(100);
 
-	F::NullNexus.Disconnect();
 	g_Events.Destroy();
 	g_HookManager.Release();
 	g_PatchManager.Restore();

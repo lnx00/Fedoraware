@@ -60,7 +60,7 @@ class WebSocketClient
 
     void log(const std::string& msg)
     {
-        // std::cout << msg << std::endl;
+        std::cout << msg << std::endl;
     }
 
     void handle_handler_error(const boost::system::error_code& ec)
@@ -315,6 +315,8 @@ public:
         // Let boost deal with anything related to thread safety
         net::post(ioc, [this, &ret] { internalStop(ret); });
         future.wait();
+        work.reset();
+        worker->join();
     }
 
     bool sendMessage(const std::string& msg, bool sendIfOffline = false)
@@ -354,8 +356,6 @@ public:
     ~WebSocketClient()
     {
         stop();
-        work.reset();
-        worker->join();
     }
 };
 

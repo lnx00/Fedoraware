@@ -362,7 +362,7 @@
     <ClInclude Include="TeamFortress2\Features\Commands\Commands.h" />
     <ClInclude Include="TeamFortress2\Features\TickHandler\TickHandler.h" />
     <ClInclude Include="TeamFortress2\Features\Fedworking\libNullNexus\libNullNexus.hpp" />
-    <ClInclude Include="TeamFortress2\Features\Fedworking\libNullNexus\WebSocketClient.h" />
+    <ClInclude Include="TeamFortress2\Features\Fedworking\libNullNexus\WebSocketClient.hpp" />
     <ClInclude Include="TeamFortress2\Features\Fedworking\NullNexus.h" />
     <ClInclude Include="TeamFortress2\Features\LuaEngine\Callbacks\LuaCallbacks.h" />
     <ClInclude Include="TeamFortress2\Features\LuaEngine\LuaEngine.h" />
