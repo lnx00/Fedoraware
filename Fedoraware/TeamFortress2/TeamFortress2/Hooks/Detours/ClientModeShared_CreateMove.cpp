@@ -20,6 +20,7 @@
 #include "../../Features/Glow/Glow.h"
 #include "../../Features/Menu/MaterialEditor/MaterialEditor.h"
 #include "../../Features/LuaEngine/Callbacks/LuaCallbacks.h"
+#include "../../Features/TickHandler/TickHandler.h"
 
 void AttackingUpdate(){
 	if (!G::IsAttacking) { return; }
@@ -27,7 +28,7 @@ void AttackingUpdate(){
 	if (const auto& pLocal = g_EntityCache.GetLocal()){
 	if (const auto& pWeapon = g_EntityCache.GetWeapon())
 	{
-		const float flFireDelay = pWeapon->GetFireRate();	//	I have no idea why this works (none) when this returns no good value, frankly, i dnc, it works LOL
+		const float flFireDelay = pWeapon->GetWeaponData().m_flTimeFireDelay;
 		pWeapon->m_flNextPrimaryAttack() = static_cast<float>(pLocal->GetTickBase()) * I::GlobalVars->interval_per_tick + flFireDelay;
 	}
 	}
@@ -142,7 +143,7 @@ MAKE_HOOK(ClientModeShared_CreateMove, Utils::GetVFuncPtr(I::ClientModeShared, 2
 
 	// Run Features
 	{
-		F::Misc.Run(pCmd);
+		F::Misc.RunPre(pCmd, pSendPacket);
 		F::Fedworking.Run();
 		F::CameraWindow.Update();
 		F::BadActors.OnTick();
@@ -152,12 +153,13 @@ MAKE_HOOK(ClientModeShared_CreateMove, Utils::GetVFuncPtr(I::ClientModeShared, 2
 			F::Aimbot.Run(pCmd);
 			F::Auto.Run(pCmd);
 			F::AntiAim.Run(pCmd, pSendPacket);
-			F::Misc.EdgeJump(pCmd, nOldFlags);
+			F::Misc.RunMid(pCmd, nOldFlags);
 		}
 		F::EnginePrediction.End(pCmd);
 
+		F::Ticks.CreateMove(pCmd);
 		F::CritHack.Run(pCmd);
-		F::Misc.RunLate(pCmd, pSendPacket);
+		F::Misc.RunPost(pCmd, pSendPacket);
 		F::Resolver.Update(pCmd);
 		F::Followbot.Run(pCmd);
 		F::FakeLag.OnTick(pCmd, pSendPacket);
@@ -172,14 +174,6 @@ MAKE_HOOK(ClientModeShared_CreateMove, Utils::GetVFuncPtr(I::ClientModeShared, 2
 	}
 
 	G::ViewAngles = pCmd->viewangles;
-
-	static int nChoked = 0;
-	if (G::ShouldShift) { *pSendPacket = G::ShiftedTicks == 1; }
-	else {
-		if (!*pSendPacket) { nChoked++; }
-		else { nChoked = 0; }
-		if (nChoked > 21) { *pSendPacket = true; }
-	}
 
 	// Party Crasher: Crashes the party by spamming messages
 	if (Vars::Misc::PartyCrasher.Value && !G::ShouldShift)
@@ -218,18 +212,7 @@ MAKE_HOOK(ClientModeShared_CreateMove, Utils::GetVFuncPtr(I::ClientModeShared, 2
 	}
 	else{ AttackingUpdate(); }
 
-	// Stop movement if required
-	if (G::ShouldStop || ((G::RechargeQueued || G::Recharging) && Vars::Misc::CL_Move::StopMovement.Value))
-	{
-		//G::ShouldStop = false;	//	we still need to stop if we didn't stop...
-		Utils::StopMovement(pCmd/*, !G::ShouldShift*/);
-		if (!G::IsAttacking && !G::Recharging && !G::ShouldStop) {	//	only do this code if we DID actually stop.
-			*pSendPacket = false;	//	stop angle shit
-		}
-		return false;
-	}
-
-	// do this at the end just in case aimbot / triggerbot fired.//
+	// do this at the end just in case aimbot / triggerbot fired.
 	if (const auto& pWeapon = g_EntityCache.GetWeapon()) {
 		if (pCmd->buttons & IN_ATTACK && Vars::Misc::CL_Move::SafeTick.Value) {
 			if (G::NextSafeTick > I::GlobalVars->tickcount && G::ShouldShift && G::ShiftedTicks) {

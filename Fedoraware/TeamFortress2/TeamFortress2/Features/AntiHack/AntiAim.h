@@ -6,6 +6,7 @@ class CAntiAim
 private:
 	// utils
 	void FixMovement(CUserCmd* pCmd, const Vec3& vOldAngles, float fOldSideMove, float fOldForwardMove);
+	void ManualMouseEvent(CUserCmd* pCmd);
 
 	// logic
 	float EdgeDistance(float edgeRayYaw);
@@ -27,11 +28,18 @@ private:
 	bool bWasHit = false;
 	bool bEdge = false;	//	false - right, true - left
 	bool bPitchFlip = false;
+	bool bInvert = false;
+	bool bManualing = false;
+	bool bSaved = false;
+	Vec3 vSavedAngles = {};
+	std::pair<bool, bool> p_bJitter = {false, false};
+	std::pair<bool, std::pair<bool, bool>> p_p_bManualYaw = {false, {false, false}};	//	{vert/hori, {left/right, down/up}}
 
 	Timer tAATimer{};
 public:
 	void Run(CUserCmd* pCmd, bool* pSendPacket);
 	void Event(CGameEvent* pEvent, const FNV1A_t uNameHash);
+	void Draw(CBaseEntity* pLocal);
 };
 
 ADD_FEATURE(CAntiAim, AntiAim)

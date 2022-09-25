@@ -74,8 +74,8 @@ namespace Vars
 			inline CVar<bool> AimStickies{ false };
 			inline CVar<bool> AimNPC{ false };
 			inline CVar<bool> AimBombs{ false };
-			inline CVar<int> IgnoreOptions{ 0b0000000 }; //fakelagging players, vaccinator, taunting, friends, deadringer,cloaked, invul
-			inline CVar<bool> IgnoreInvlunerable{ false };
+			inline CVar<int> IgnoreOptions{ 0b0000000 }; //disguised, fakelagging players, vaccinator, taunting, friends, deadringer,cloaked, invul
+			inline CVar<int> TickTolerance{ 7 };
 			inline CVar<bool> BAimLethal{ false }; // This is in global cause i remmebered hunterman exists
 			inline CVar<bool> showHitboxes{ false }; // original codenz
 			inline CVar<bool> ClearPreviousHitbox{ false };
@@ -90,8 +90,8 @@ namespace Vars
 			inline CVar<bool> RespectFOV{ true };
 			inline CVar<int> AimMethod{ 2 }; //0 - Normal,	1 - Smooth, 2 - Silent
 			inline CVar<int> AimHitbox{ 2 }; //0 - Head,		1 - Body,	2 - Auto
-			inline CVar<int> ScanHitboxes{ 7 }; // Binary: 00111 {legs, arms, body, pelvis, head}
-			inline CVar<int> MultiHitboxes{ 5 }; // Binary: 00101 {legs, arms, body, pelvis, head}
+			inline CVar<int> ScanHitboxes{ 0b00111 }; // {legs, arms, body, pelvis, head}
+			inline CVar<int> MultiHitboxes{ 0b0101 }; // {legs, arms, body, pelvis, head}
 			inline CVar<float> PointScale{ .54f };
 			inline CVar<int> SmoothingAmount{ 4 };
 			inline CVar<int> TapFire{ 0 }; //0 - Off, 1 - Distance, 2 - Always
@@ -151,9 +151,7 @@ namespace Vars
 		{
 			inline CVar<bool> Active{ false };
 			inline CVar<int> TriggerKey{ VK_XBUTTON2 };
-			inline CVar<bool> IgnoreInvlunerable{ false };
-			inline CVar<bool> IgnoreCloaked{ false };
-			inline CVar<bool> IgnoreFriends{ false };
+			inline CVar<int> IgnoreOptions{ 0b00000 }; //disguised, fakelagging players, taunting, friends, cloaked, invul
 		}
 
 		namespace Shoot
@@ -204,6 +202,8 @@ namespace Vars
 			inline CVar<bool> AutoVacc{ false };
 			inline CVar<float> HealthLeft{ 35.0f };
 			inline CVar<bool> VoiceCommand{ false };
+			inline CVar<int> ReactFoV{25};
+			inline CVar<bool> BulletRes{ true }; inline CVar<bool> BlastRes{ true }; inline CVar<bool> FireRes{ true };
 		}
 	}
 
@@ -214,7 +214,11 @@ namespace Vars
 			inline CVar<bool> Active{ false };
 			inline CVar<bool> Outlinedbar{ false };
 			inline CVar<bool> EnableTeamEnemyColors{ false };
+			inline CVar<bool> DistanceToAlpha{false};
 			inline CVar<bool> DormantSoundESP{ false };
+			inline CVar<float> DormantTime{1.f};
+			inline CVar<int> DormantDist{1000};
+			inline CVar<int> NetworkedDist{2000};
 		}
 
 
@@ -525,6 +529,7 @@ namespace Vars
 		inline CVar<bool> AimbotViewmodel{ false };
 		inline CVar<bool> ViewmodelSway{ false };
 		inline CVar<bool> MoveSimLine{ false };
+		inline CVar<bool> MoveSimSeperators{ false };
 		inline CVar<int> ParticleTracer{ 2 };
 		inline std::string ParticleName = "merasmus_zap_beam01"; // dont save this as a var its pointless
 		inline CVar<bool> DoPostProcessing{ false };
@@ -682,6 +687,7 @@ namespace Vars
 			inline CVar<bool> StopMovement{ false };
 			inline CVar<int> TeleportKey{ 0x52 }; //R
 			inline CVar<int> TeleportMode{ 0 };
+			inline CVar<int> TeleportFactor{ 2 };
 			inline CVar<int> RechargeKey{ 0x48 }; //H
 			inline CVar<int> DoubletapKey{ 0x56 }; //V
 			inline CVar<bool> RetainFakelag{ false };
@@ -738,6 +744,8 @@ namespace Vars
 		{
 			inline CVar<bool> Active{ false };
 			inline CVar<int> ToggleKey{ 0 };
+			inline CVar<int> InvertKey{ 0 };
+			inline CVar<int> ManualKey{ 0 };
 			inline CVar<int> Pitch{ 0 }; //0 - None, 1 - Zero, 2 - Up, 3 - Down, 4 - Fake Up, 5 - Fake Down
 			inline CVar<int> YawReal{ 0 }; //0 - None, 1 - Forward, 2 - Left, 3 - Right, 4 - Backwards
 			inline CVar<int> YawFake{ 0 }; //0 - None, 1 - Forward, 2 - Left, 3 - Right, 4 - Backwards
@@ -747,6 +755,8 @@ namespace Vars
 			inline CVar<float> CustomRealPitch{ 0.f };
 			inline CVar<float> CustomRealYaw{ 0 };
 			inline CVar<float> CustomFakeYaw{ 0 };
+			inline CVar<float> FakeJitter{ 0 };
+			inline CVar<float> RealJitter{ 0 };
 			inline CVar<int> RandInterval{ 25 };
 			inline CVar<bool> AntiBackstab{ false };
 			inline CVar<bool> LegJitter{ false }; // frick u fourteen

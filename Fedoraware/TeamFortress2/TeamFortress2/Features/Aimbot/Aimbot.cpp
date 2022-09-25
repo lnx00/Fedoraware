@@ -4,6 +4,7 @@
 #include "AimbotHitscan/AimbotHitscan.h"
 #include "AimbotProjectile/AimbotProjectile.h"
 #include "AimbotMelee/AimbotMelee.h"
+#include "../Misc/Misc.h"
 
 bool CAimbot::ShouldRun(CBaseEntity* pLocal, CBaseCombatWeapon* pWeapon)
 {
@@ -19,7 +20,7 @@ bool CAimbot::ShouldRun(CBaseEntity* pLocal, CBaseCombatWeapon* pWeapon)
 	// Don't run if we are frozen in place.
 	if (G::Frozen) { return false; }
 
-	if (!Vars::Aimbot::Global::DontWaitForShot.Value && (!G::WeaponCanAttack && !G::IsAttacking) && G::CurWeaponType != EWeaponType::MELEE)
+	if (!Vars::Aimbot::Global::DontWaitForShot.Value && (!G::IsAttacking && !G::WeaponCanAttack) && G::CurWeaponType != EWeaponType::MELEE)
 	{ 
 		return false; 
 	}	//	don't run if we can't shoot (should stop unbearable dt lag)
@@ -77,6 +78,8 @@ void CAimbot::Run(CUserCmd* pCmd)
 	G::HitscanRunning = false;
 	G::HitscanSilentActive = false;
 	G::AimPos = Vec3();
+
+	if (F::Misc.bMovementStopped || F::Misc.bFastAccel) { return; }
 
 	const auto pLocal = g_EntityCache.GetLocal();
 	const auto pWeapon = g_EntityCache.GetWeapon();

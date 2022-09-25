@@ -117,8 +117,6 @@ public: //Netvars & conditions
 		M_OFFSETGET(WaterJumpTime, float, 0x10FC)
 		M_OFFSETGET(SurfaceFriction, float, 0x12D4)
 		M_OFFSETGET(MoveType, MoveType_t, 0x1A4)
-		M_OFFSETGET(m_ubInterpolationFrame, byte, 0x78)
-		M_OFFSETGET(m_ubOldInterpolationFrame, byte, 0x79)
 
 		M_CONDGET(OnGround, GetFlags(), FL_ONGROUND)
 		M_CONDGET(InWater, GetFlags(), FL_INWATER)
@@ -212,7 +210,8 @@ public: //Netvars & conditions
 		NETVAR(m_hVehicle, int, "CBasePlayer", "m_hVehicle")
 		NETVAR(m_hUseEntity, int, "CBasePlayer", "m_hUseEntity")
 		NETVAR(m_iHealth, int, "CBasePlayer", "m_iHealth")
-		NETVAR(m_ubInterpolationFrame, int, "CBasePlayer", "m_ubInterpolationFrame")
+		NETVAR(m_ubInterpolationFrame, byte, "CBasePlayer", "m_ubInterpolationFrame")
+		NETVAR(m_ubOldInterpolationFrame, byte, "CBasePlayer", "m_ubInterpolationFrame" + 0x1)
 		NETVAR(m_fEffects, int, "CBasePlayer", "m_fEffects")
 		NETVAR(m_lifeState, byte, "CBasePlayer", "m_lifeState")
 		NETVAR(m_iBonusProgress, int, "CBasePlayer", "m_iBonusProgress")
@@ -753,6 +752,17 @@ public: //Everything else, lol.
 
 	__inline void SetAnimTime(const float flAnimTime) {
 		DYNVAR_SET(float, this, flAnimTime, "DT_BaseEntity", "m_flAnimTime");
+	}
+
+	__inline void EstimateAbsVelocity(Vec3& vVel){
+		static auto fnEstimateABSVelocity = reinterpret_cast<void(__thiscall*)(void*, Vec3&)>(g_Pattern.Find(L"client.dll", L"55 8B EC 83 EC ? 56 8B F1 E8 ? ? ? ? 3B F0 75 ? 8B CE E8 ? ? ? ? 8B 45 ? D9 86 ? ? ? ? D9 18 D9 86 ? ? ? ? D9 58 ? D9 86 ? ? ? ? D9 58 ? 5E 8B E5 5D C2"));
+		fnEstimateABSVelocity(this, vVel);
+	}
+
+	__inline float TickVelocity2D(){	//	bad
+		const int iDivide = floor(1000.f / I::GlobalVars->interval_per_tick);
+		const float flVel = this->m_vecVelocity().Length2D();
+		return flVel / iDivide;
 	}
 
 	/*

@@ -1,4 +1,5 @@
 #include "../Hooks.h"
+#include "../HookManager.h"
 
 
 

@@ -32,11 +32,18 @@ int BulletDangerValue(CBaseEntity* pPatient)
 		// Ignore ignored players
 		if (F::AutoGlobal.ShouldIgnore(player)) { continue; }
 
+		const Vec3 vAngleTo = Math::CalcAngle(player->GetEyePosition(), pPatient->GetWorldSpaceCenter());
+		const float flFOVTo = Math::CalcFov(player->GetEyeAngles(), vAngleTo);
+
+		if (G::PlayerPriority[player->GetIndex()].Mode != 4 && Vars::Triggerbot::Uber::ReactFoV.Value){ 
+			if ((flFOVTo - (3.f * G::ChokeMap[player->GetIndex()])) > (float)Vars::Triggerbot::Uber::ReactFoV.Value) { continue; }	//	account for choking :D
+		}	//	respect FoV if player is not a cheater :D
+
 		// Check for any zoomed snipers
 		if (HAS_CONDITION(player, TFCond_Zoomed))
 		{
 			anyZoomedSnipers = true;
-			if (Utils::VisPos(pPatient, player, pPatient->GetHitboxPos(HITBOX_HEAD), player->GetHitboxPos(HITBOX_HEAD)))
+			if (Utils::VisPos(pPatient, player, pPatient->GetHitboxPos(HITBOX_HEAD), player->GetEyePosition()))
 			{
 				return 2;
 			}
@@ -47,8 +54,7 @@ int BulletDangerValue(CBaseEntity* pPatient)
 		{
 			if (const auto& pWeapon = player->GetActiveWeapon())
 			{
-				if (Utils::VisPos(pPatient, player, pPatient->GetHitboxPos(HITBOX_PELVIS),
-				                  player->GetHitboxPos(HITBOX_HEAD)))
+				if (Utils::VisPos(pPatient, player, pPatient->GetHitboxPos(HITBOX_PELVIS), player->GetEyePosition()))
 				{
 					if (pPatient->GetVecOrigin().DistTo(player->GetVecOrigin()) < 350.f ||
 						(pPatient->GetVecOrigin().DistTo(player->GetVecOrigin()) < 600.f && (
@@ -103,6 +109,9 @@ int BlastDangerValue(CBaseEntity* pPatient)
 
 	for (const auto& pProjectile : g_EntityCache.GetGroup(EGroupType::WORLD_PROJECTILES))
 	{
+		if (hasRockets && !pProjectile->IsCritBoosted())
+			continue;
+
 		if (pProjectile->GetVelocity().IsZero())
 			continue;
 
@@ -117,19 +126,20 @@ int BlastDangerValue(CBaseEntity* pPatient)
 			continue;
 
 		// Projectile is getting closer
+		/*const Vec3 vPredicted = (pProjectile->GetAbsOrigin() + pProjectile->GetVelocity());
+		const float flHypPred = sqrtf(pPatient->GetVecOrigin().DistToSqr(vPredicted));
+		const float flHyp = sqrtf(pPatient->GetVecOrigin().DistToSqr(pProjectile->GetVecOrigin()));
+		if ( flHypPred < flHyp && pPatient->GetVecOrigin().DistTo(vPredicted) < pProjectile->GetVelocity().Length())	//	this is way too sensitive
+		*/
 		Vec3 vPredicted = (pProjectile->GetAbsOrigin() + pProjectile->GetVelocity());
-		if (pPatient->GetVecOrigin().DistToSqr(pProjectile->GetVecOrigin()) > pPatient->GetVecOrigin().
-			DistToSqr(vPredicted) &&
-			pPatient->GetVecOrigin().DistTo(vPredicted) < 200.f)
-		{
-			if (pProjectile->IsCritBoosted()) { return 2; }
+		if (pPatient->GetAbsOrigin().DistTo(pProjectile->GetAbsOrigin()) <= 275.f) {
 			hasRockets = true;
 		}
 	}
 
 	if (hasRockets)
 	{
-		if (pPatient->GetHealth() < 80)
+		if (pPatient->GetHealth() < 235)
 		{
 			return 2;
 		}
@@ -166,9 +176,9 @@ int OptimalResistance(CBaseEntity* pPatient, bool* pShouldPop)
 	if (pShouldPop)
 	{
 		int charges = ChargeCount();
-		if (bulletDanger > 1) { *pShouldPop = true; }
-		if (fireDanger > 1) { *pShouldPop = true; }
-		if (blastDanger > 1) { *pShouldPop = true; }
+		if (bulletDanger > 1 && Vars::Triggerbot::Uber::BulletRes.Value) { *pShouldPop = true; }
+		if (fireDanger > 1 && Vars::Triggerbot::Uber::FireRes.Value) { *pShouldPop = true; }
+		if (blastDanger > 1 && Vars::Triggerbot::Uber::BlastRes.Value) { *pShouldPop = true; }
 	}
 
 	if (!(bulletDanger || fireDanger || blastDanger))

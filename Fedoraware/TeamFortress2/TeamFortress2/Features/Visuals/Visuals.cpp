@@ -453,9 +453,56 @@ void CVisuals::DrawTickbaseInfo(CBaseEntity* pLocal)
 							g_Draw.String(FONT_INDICATORS, DTBox.x + DTBox.w, DTBox.y - 10, { 255, 46, 46, 255 }, ALIGN_REVERSE, L"DT IMPOSSIBLE");
 						}
 						break;
-
 					}
+					case 4:
+					{
+						if (G::ShiftedTicks == 0 || G::Recharging){
+							g_Draw.String(FONT_INDICATORS, DTBox.c, DTBox.y - 10, { 255, 64, 64, 255 }, ALIGN_CENTERHORIZONTAL, L"Recharge! (%i / %i)", G::ShiftedTicks, Vars::Misc::CL_Move::DTTicks.Value);
+						}
+						else if (G::WaitForShift){
+							g_Draw.String(FONT_INDICATORS, DTBox.c, DTBox.y - 10, { 255, 178, 0, 255 }, ALIGN_CENTERHORIZONTAL, L"Wait! (%i / 25)", G::WaitForShift);
+						}
+						else{
+							g_Draw.String(FONT_INDICATORS, DTBox.c, DTBox.y - 10, { 153, 255, 153, 255 }, ALIGN_CENTERHORIZONTAL, L"Shift ready!");
+						}
+						break;
+					}
+					case 5:
+					{
+						g_Draw.String(FONT_INDICATORS, DTBox.c, DTBox.y - 3, { 255, 255, 255, 255 }, ALIGN_CENTERHORIZONTAL, L"%i/%i", G::ShiftedTicks, Vars::Misc::CL_Move::DTTicks.Value);
+						break;
+					}
+						//hhhs0j — Today at 15:19
+						//Add a dt indicator but only with numbers
+
 				}
+				
+			}
+		}
+	}
+}
+
+void CVisuals::DrawServerHitboxes()
+{
+	static int iOldTick = I::GlobalVars->tickcount;
+	if (iOldTick == I::GlobalVars->tickcount) { return; } iOldTick = I::GlobalVars->tickcount;
+	// draw our serverside hitbox on local servers, used to test fakelag & antiaim
+	if (I::Input->CAM_IsThirdPerson() && Vars::Visuals::ThirdPersonServerHitbox.Value)
+	{
+		//	i have no idea what this is
+		using GetServerAnimating_t = void* (*)(int);
+		static auto GetServerAnimating = reinterpret_cast<GetServerAnimating_t>(g_Pattern.Find(L"server.dll", L"55 8B EC 8B 55 ? 85 D2 7E ? A1"));
+
+		using DrawServerHitboxes_t = void(__thiscall*)(void*, float, bool);	// C_BaseAnimating, Duration, MonoColour
+		static auto DrawServerHitboxes = reinterpret_cast<DrawServerHitboxes_t>(g_Pattern.Find(L"server.dll", L"55 8B EC 83 EC ? 57 8B F9 80 BF ? ? ? ? ? 0F 85 ? ? ? ? 83 BF ? ? ? ? ? 75 ? E8 ? ? ? ? 85 C0 74 ? 8B CF E8 ? ? ? ? 8B 97"));
+
+		const auto pLocal = I::ClientEntityList->GetClientEntity(I::EngineClient->GetLocalPlayer());
+		if (pLocal && pLocal->IsAlive())
+		{
+			void* server_animating = GetServerAnimating(pLocal->GetIndex());
+			if (server_animating)
+			{
+				DrawServerHitboxes(server_animating, I::GlobalVars->interval_per_tick, true);
 			}
 		}
 	}
@@ -564,23 +611,25 @@ void CVisuals::DrawMovesimLine()
 	{
 		if (!G::PredLinesBackup.empty())
 		{
-			for (size_t i = 1; i < G::PredLinesBackup.size(); i++)
+			if (!Vars::Visuals::MoveSimSeperators.Value)
 			{
-				RenderLine(G::PredLinesBackup.at(i - 1), G::PredLinesBackup.at(i), Vars::Aimbot::Projectile::PredictionColor, false);
+				for (size_t i = 1; i < G::PredLinesBackup.size(); i++)
+				{
+					RenderLine(G::PredLinesBackup.at(i - 1), G::PredLinesBackup.at(i), Vars::Aimbot::Projectile::PredictionColor, false);
+				}
+			}
+			else
+			{
+				for (size_t i = 2; i < G::PredLinesBackup.size(); i += 2)
+				{
+					const auto& vStart = G::PredLinesBackup[i - 2];
+					const auto& vRotate = G::PredLinesBackup[i - 1];
+					const auto& vEnd = G::PredLinesBackup[i];
+					RenderLine(vStart, vRotate, Vars::Aimbot::Projectile::PredictionColor, false);
+					RenderLine(vStart, vEnd,	Vars::Aimbot::Projectile::PredictionColor, false);
+				}
 			}
 		}
-		//if (!G::PredictionLines.empty())
-		//{
-		//	for (size_t i = 1; i < G::PredictionLines.size(); i++)
-		//	{
-		//		I::DebugOverlay->AddLineOverlay(G::PredictionLines.at(i - 1), G::PredictionLines.at(i),
-		//										Vars::Aimbot::Projectile::PredictionColor.r,
-		//										Vars::Aimbot::Projectile::PredictionColor.g,
-		//										Vars::Aimbot::Projectile::PredictionColor.b,
-		//										false,
-		//										1.f);
-		//	}
-		//}
 	}
 }
 

@@ -137,6 +137,12 @@ void CESP::DrawPlayers(CBaseEntity* pLocal)
 			continue;
 		}
 
+		// distance things
+		const Vec3 vDelta = Player->GetAbsOrigin() - pLocal->GetAbsOrigin();
+		const float flDistance = vDelta.Length2D();
+		if (flDistance >= (Player->GetDormant() ? Vars::ESP::Main::DormantDist.Value : Vars::ESP::Main::NetworkedDist.Value)) { continue; }
+		I::VGuiSurface->DrawSetAlphaMultiplier(Vars::ESP::Main::DistanceToAlpha.Value ? Math::RemapValClamped(flDistance, (Player->GetDormant() ? Vars::ESP::Main::DormantDist.Value : Vars::ESP::Main::NetworkedDist.Value) - 256.f, (Player->GetDormant() ? Vars::ESP::Main::DormantDist.Value : Vars::ESP::Main::NetworkedDist.Value), Vars::ESP::Players::Alpha.Value, 0.f) : Vars::ESP::Players::Alpha.Value);
+
 		int nIndex = Player->GetIndex();
 		bool bIsLocal = nIndex == I::EngineClient->GetLocalPlayer();
 
@@ -208,8 +214,6 @@ void CESP::DrawPlayers(CBaseEntity* pLocal)
 				}
 			}
 
-			I::VGuiSurface->DrawSetAlphaMultiplier(Vars::ESP::Players::Alpha.Value);
-
 			// Bone ESP
 			if (Vars::ESP::Players::Bones.Value)
 			{
@@ -278,6 +282,13 @@ void CESP::DrawPlayers(CBaseEntity* pLocal)
 				g_Draw.String(FONT, nTextX, y + nTextOffset, nHealth > nMaxHealth ? Colors::Overheal : healthColor,
 							  ALIGN_DEFAULT, L"%d / %d", nHealth, nMaxHealth);
 				nTextOffset += g_Draw.m_vecFonts[FONT].nTall;
+			}
+
+			if (Vars::Debug::DebugInfo.Value)
+			{
+				Vec3 vPlayerVelocity{};
+				Player->EstimateAbsVelocity(vPlayerVelocity);
+				g_Draw.String(FONT, nTextX, y + nTextOffset, Colors::White, ALIGN_DEFAULT, L"SPEED (%.0f)", vPlayerVelocity.Length());
 			}
 
 			// Ubercharge status/bar
@@ -362,7 +373,7 @@ void CESP::DrawPlayers(CBaseEntity* pLocal)
 				// Cheater detection ESP
 				if (G::PlayerPriority[pi.friendsID].Mode == 4 && Vars::ESP::Players::CheaterDetection.Value)
 				{
-					g_Draw.String(FONT, nTextX, y + nTextOffset, { 255, 0, 0, 255 }, ALIGN_DEFAULT, "CHEATER");
+					g_Draw.String(FONT, middle, y - 28, { 255, 0, 0, 255 }, ALIGN_CENTERHORIZONTAL, "CHEATER");
 					nTextOffset += g_Draw.m_vecFonts[FONT].nTall;
 				}
 
@@ -375,7 +386,7 @@ void CESP::DrawPlayers(CBaseEntity* pLocal)
 			}
 
 			// Class ESP
-			if (Vars::ESP::Players::Class.Value)
+	                if (Vars::ESP::Players::Class.Value)
 			{
 				if (Vars::ESP::Players::Class.Value == 1 || Vars::ESP::Players::Class.Value == 3)
 				{
@@ -389,8 +400,14 @@ void CESP::DrawPlayers(CBaseEntity* pLocal)
 					}
 
 					static constexpr int TEXTURE_SIZE = 18;
-					g_Draw.Texture(x + w / 2 - TEXTURE_SIZE / 2, y - offset - TEXTURE_SIZE, TEXTURE_SIZE, TEXTURE_SIZE, Colors::White,
+					if (Vars::ESP::Players::CheaterDetection.Value && G::PlayerPriority[pi.friendsID].Mode == 4)
+					{
+					g_Draw.Texture(x + w / 2 - TEXTURE_SIZE / 2, y - 30 - TEXTURE_SIZE, TEXTURE_SIZE, TEXTURE_SIZE, Colors::White,
 								   nClassNum);
+					}
+					else
+					g_Draw.Texture(x + w / 2 - TEXTURE_SIZE / 2, y - offset - TEXTURE_SIZE, TEXTURE_SIZE, TEXTURE_SIZE, Colors::White,
+							nClassNum);
 				}
 
 				if (Vars::ESP::Players::Class.Value >= 2)
@@ -434,7 +451,7 @@ void CESP::DrawPlayers(CBaseEntity* pLocal)
 								}
 								case 1: // Sapper ????
 								{
-									iWeaponSlot = -1; // Can't seem to get the sapper to show :/
+									iWeaponSlot = 4;
 									break;
 								}
 								// case 2: // Knife
@@ -594,10 +611,9 @@ void CESP::DrawPlayers(CBaseEntity* pLocal)
 
 				x += 1;
 			}
-
-			I::VGuiSurface->DrawSetAlphaMultiplier(1.0f);
 		}
 	}
+	I::VGuiSurface->DrawSetAlphaMultiplier(1.0f);
 }
 
 void CESP::DrawBuildings(CBaseEntity* pLocal) const
@@ -613,6 +629,13 @@ void CESP::DrawBuildings(CBaseEntity* pLocal) const
 		{
 			continue;
 		}
+
+		// distance things
+		const Vec3 vDelta = pBuilding->GetAbsOrigin() - pLocal->GetAbsOrigin();
+		const float flDistance = vDelta.Length2D();
+		if (flDistance >= Vars::ESP::Main::NetworkedDist.Value) { continue; }
+		I::VGuiSurface->DrawSetAlphaMultiplier(Vars::ESP::Main::DistanceToAlpha.Value ? Math::RemapValClamped(flDistance, Vars::ESP::Main::NetworkedDist.Value - 256.f, Vars::ESP::Main::NetworkedDist.Value, Vars::ESP::Buildings::Alpha.Value, 0.f) : Vars::ESP::Buildings::Alpha.Value);
+
 
 		const auto& building = reinterpret_cast<CBaseObject*>(pBuilding);
 
@@ -641,8 +664,6 @@ void CESP::DrawBuildings(CBaseEntity* pLocal) const
 			size_t FONT = FONT_ESP, FONT_NAME = FONT_ESP_NAME, FONT_COND = FONT_ESP_COND;
 
 			const bool bIsMini = building->GetMiniBuilding();
-
-			I::VGuiSurface->DrawSetAlphaMultiplier(Vars::ESP::Buildings::Alpha.Value);
 
 			// Box ESP (Rect, Corners, 3D)
 			switch (Vars::ESP::Buildings::Box.Value)
@@ -896,9 +917,9 @@ void CESP::DrawBuildings(CBaseEntity* pLocal) const
 				}
 			}
 
-			I::VGuiSurface->DrawSetAlphaMultiplier(1.0f);
 		}
 	}
+	I::VGuiSurface->DrawSetAlphaMultiplier(1.0f);
 }
 
 void CESP::DrawWorld() const
@@ -917,6 +938,12 @@ void CESP::DrawWorld() const
 
 	for (const auto& health : g_EntityCache.GetGroup(EGroupType::WORLD_HEALTH))
 	{
+		// distance things
+		const Vec3 vDelta = health->GetAbsOrigin() - pLocal->GetAbsOrigin();
+		const float flDistance = vDelta.Length2D();
+		if (flDistance >= Vars::ESP::Main::NetworkedDist.Value) { continue; }
+		I::VGuiSurface->DrawSetAlphaMultiplier(Vars::ESP::Main::DistanceToAlpha.Value ? Math::RemapValClamped(flDistance, Vars::ESP::Main::NetworkedDist.Value - 256.f, Vars::ESP::Main::NetworkedDist.Value, Vars::ESP::World::Alpha.Value, 0.f) : Vars::ESP::World::Alpha.Value);
+
 		int x = 0, y = 0, w = 0, h = 0;
 		Vec3 vTrans[8];
 		if (GetDrawBounds(health, vTrans, x, y, w, h))
@@ -973,6 +1000,12 @@ void CESP::DrawWorld() const
 
 	for (const auto& ammo : g_EntityCache.GetGroup(EGroupType::WORLD_AMMO))
 	{
+		// distance things
+		const Vec3 vDelta = ammo->GetAbsOrigin() - pLocal->GetAbsOrigin();
+		const float flDistance = vDelta.Length2D();
+		if (flDistance >= Vars::ESP::Main::NetworkedDist.Value) { continue; }
+		I::VGuiSurface->DrawSetAlphaMultiplier(Vars::ESP::Main::DistanceToAlpha.Value ? Math::RemapValClamped(flDistance, Vars::ESP::Main::NetworkedDist.Value - 256.f, Vars::ESP::Main::NetworkedDist.Value, Vars::ESP::World::Alpha.Value, 0.f) : Vars::ESP::World::Alpha.Value);
+
 		int x = 0, y = 0, w = 0, h = 0;
 		Vec3 vTrans[8];
 		if (GetDrawBounds(ammo, vTrans, x, y, w, h))
@@ -1029,6 +1062,12 @@ void CESP::DrawWorld() const
 
 	for (const auto& NPC : g_EntityCache.GetGroup(EGroupType::WORLD_NPC))
 	{
+		// distance things
+		const Vec3 vDelta = NPC->GetAbsOrigin() - pLocal->GetAbsOrigin();
+		const float flDistance = vDelta.Length2D();
+		if (flDistance >= Vars::ESP::Main::NetworkedDist.Value) { continue; }
+		I::VGuiSurface->DrawSetAlphaMultiplier(Vars::ESP::Main::DistanceToAlpha.Value ? Math::RemapValClamped(flDistance, Vars::ESP::Main::NetworkedDist.Value - 256.f, Vars::ESP::Main::NetworkedDist.Value, Vars::ESP::World::Alpha.Value, 0.f) : Vars::ESP::World::Alpha.Value);
+
 		int x = 0, y = 0, w = 0, h = 0;
 		Vec3 vTrans[8];
 		if (GetDrawBounds(NPC, vTrans, x, y, w, h))
@@ -1123,6 +1162,12 @@ void CESP::DrawWorld() const
 
 	for (const auto& Bombs : g_EntityCache.GetGroup(EGroupType::WORLD_BOMBS))
 	{
+		// distance things
+		const Vec3 vDelta = Bombs->GetAbsOrigin() - pLocal->GetAbsOrigin();
+		const float flDistance = vDelta.Length2D();
+		if (flDistance >= Vars::ESP::Main::NetworkedDist.Value) { continue; }
+		I::VGuiSurface->DrawSetAlphaMultiplier(Vars::ESP::Main::DistanceToAlpha.Value ? Math::RemapValClamped(flDistance, Vars::ESP::Main::NetworkedDist.Value - 256.f, Vars::ESP::Main::NetworkedDist.Value, Vars::ESP::World::Alpha.Value, 0.f) : Vars::ESP::World::Alpha.Value);
+
 		int x = 0, y = 0, w = 0, h = 0;
 		Vec3 vTrans[8];
 		if (GetDrawBounds(Bombs, vTrans, x, y, w, h))
@@ -1337,6 +1382,11 @@ std::vector<std::wstring> CESP::GetPlayerConds(CBaseEntity* pEntity) const
 	const int nCond = pEntity->GetCond();
 	const int nCondEx = pEntity->GetCondEx();
 	const int nFlag = pEntity->GetFlags();
+
+	{
+		const float flTickVelSqr = pow(pEntity->TickVelocity2D(), 2);
+		if (flTickVelSqr > 4096.f) { szCond.emplace_back(L"Can't Hit"); }
+	}
 
 	if (const wchar_t* rune = pEntity->GetRune()) {	// I want to see if they are the king before anything else.
 		szCond.emplace_back(rune);

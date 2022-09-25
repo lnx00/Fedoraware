@@ -10,11 +10,13 @@
 extern int attackStringW;
 extern int attackStringH;
 
-void CMisc::Run(CUserCmd* pCmd)
+void CMisc::RunPre(CUserCmd* pCmd, bool *pSendPacket)
 {
 	if (const auto& pLocal = g_EntityCache.GetLocal())
 	{
-		PrintProjAngles(pLocal);
+		FastStop(pCmd, pLocal);
+		StopMovement(pCmd, pSendPacket);
+		//PrintProjAngles(pLocal);
 		AccurateMovement(pCmd, pLocal);
 		AutoJump(pCmd, pLocal);
 		AutoStrafe(pCmd, pLocal);
@@ -31,22 +33,49 @@ void CMisc::Run(CUserCmd* pCmd)
 	ChatSpam();
 	CheatsBypass();
 	PingReducer();
-	ServerHitbox(); // super secret deathpole feature!!!!
 	WeaponSway();
 	DetectChoke();
 }
 
-void CMisc::RunLate(CUserCmd* pCmd, bool* pSendPacket)
+void CMisc::RunMid(CUserCmd* pCmd, const int nOldGroundEnt){
+	if (const auto& pLocal = g_EntityCache.GetLocal())
+	{
+		EdgeJump(pCmd, nOldGroundEnt);
+	}
+}
+
+void CMisc::RunPost(CUserCmd* pCmd, bool* pSendPacket)
 {
 	if (const auto& pLocal = g_EntityCache.GetLocal())
 	{
-		DoubleTapLogic(pCmd, pLocal);
+		DoubletapPacket(pSendPacket);
 		LegJitter(pCmd, pLocal);
-		FastStop(pCmd, pLocal);
 		AutoRocketJump(pCmd, pLocal);
 		AutoScoutJump(pCmd, pLocal);
 		FastAccel(pCmd, pLocal, pSendPacket);
+		ChokeCheck(pSendPacket);
 	}
+}
+
+void CMisc::StopMovement(CUserCmd* pCmd, bool* pSendPacket){
+	bMovementStopped = false;
+	if (!G::ShouldStop) { return; }
+	Utils::StopMovement(pCmd);
+	if (G::ShouldStop) { return; }
+	G::UpdateView = false; bMovementStopped = true;
+	if (G::Recharging) { return; }
+	*pSendPacket = false;
+}
+
+void CMisc::ChokeCheck(bool* pSendPacket){
+	static int iChokedPackets = 0;
+	if (!*pSendPacket) { iChokedPackets++; }
+	else { iChokedPackets = 0; }
+	if (iChokedPackets > 22) { *pSendPacket = true; iChokedPackets = 0; }
+}
+
+void CMisc::DoubletapPacket(bool* pSendPacket){
+	*pSendPacket = (G::ShouldShift || G::Teleporting) ? G::ShiftedTicks == 1 : *pSendPacket;
 }
 
 void CMisc::AntiAFK(CUserCmd* pCmd)
@@ -100,23 +129,24 @@ void CMisc::PrintProjAngles(CBaseEntity* pLocal){
 
 void CMisc::DetectChoke()
 {
-	if (G::Teleporting || G::ShouldShift) {return;}	//	do not do this code if we are shifting ticks.
-	for (const auto& player : g_EntityCache.GetGroup(EGroupType::PLAYERS_ALL))
+	static int iOldTick = I::GlobalVars->tickcount;
+	if (I::GlobalVars->tickcount == iOldTick) {return;}
+	for (const auto& pEntity : g_EntityCache.GetGroup(EGroupType::PLAYERS_ALL))
 	{
-		if (!player->IsAlive() || player->GetDormant())
+		if (!pEntity->IsAlive() || pEntity->GetDormant())
 		{
-			G::ChokeMap[player->GetIndex()] = 0;
+			G::ChokeMap[pEntity->GetIndex()] = 0;
 			continue;
 		}
 
-		if (player->GetSimulationTime() == player->GetOldSimulationTime())
+		if (pEntity->GetSimulationTime() == pEntity->GetOldSimulationTime())
 		{
-			G::ChokeMap[player->GetIndex()]++;
+			G::ChokeMap[pEntity->GetIndex()]++;
 		}
 		else
 		{
-			F::BadActors.ReportTickCount(player, G::ChokeMap[player->GetIndex() - 3]);
-			G::ChokeMap[player->GetIndex()] = 0;
+			F::BadActors.ReportTickCount(pEntity, G::ChokeMap[pEntity->GetIndex()]);
+			G::ChokeMap[pEntity->GetIndex()] = 0;
 		}
 	}
 }
@@ -125,37 +155,13 @@ void CMisc::DetectChoke()
 void CMisc::LegJitter(CUserCmd* pCmd, CBaseEntity* pLocal)
 {
 	static bool pos = true;
-	const float scale = pLocal->IsDucking() ? 14.f : 2.f;
+	const float scale = pLocal->IsDucking() ? 14.f : 1.0f;
 	if (G::IsAttacking || G::ShouldShift || G::AntiAim.second) { return; }
 	if (pCmd->forwardmove == 0.f && pCmd->sidemove == 0.f && pLocal->GetVecVelocity().Length2D() < 10.f && Vars::AntiHack::AntiAim::LegJitter.Value/* && I::GlobalVars->tickcount % 2*/)
 	{
 		pos ? pCmd->forwardmove = scale : pCmd->forwardmove = -scale;
 		pos ? pCmd->sidemove = scale : pCmd->sidemove = -scale;
 		pos = !pos;
-	}
-}
-
-void CMisc::ServerHitbox()
-{
-	// draw our serverside hitbox on local servers, used to test fakelag & antiaim
-	if (I::Input->CAM_IsThirdPerson() && Vars::Visuals::ThirdPersonServerHitbox.Value)
-	{
-		//	i have no idea what this is
-		using GetServerAnimating_t = void* (*)(int);
-		static auto GetServerAnimating = reinterpret_cast<GetServerAnimating_t>(g_Pattern.Find(L"server.dll", L"55 8B EC 8B 55 ? 85 D2 7E ? A1"));
-
-		using DrawServerHitboxes_t = void(__thiscall*)(void*, float, bool);	// C_BaseAnimating, Duration, MonoColour
-		static auto DrawServerHitboxes = reinterpret_cast<DrawServerHitboxes_t>(g_Pattern.Find(L"server.dll", L"55 8B EC 83 EC ? 57 8B F9 80 BF ? ? ? ? ? 0F 85 ? ? ? ? 83 BF ? ? ? ? ? 75 ? E8 ? ? ? ? 85 C0 74 ? 8B CF E8 ? ? ? ? 8B 97"));
-
-		const auto pLocal = I::ClientEntityList->GetClientEntity(I::EngineClient->GetLocalPlayer());
-		if (pLocal && pLocal->IsAlive())
-		{
-			void* server_animating = GetServerAnimating(pLocal->GetIndex());
-			if (server_animating)
-			{
-				DrawServerHitboxes(server_animating, I::GlobalVars->interval_per_tick * 2.f, true);
-			}
-		}
 	}
 }
 
@@ -176,9 +182,18 @@ void CMisc::AntiBackstab(CBaseEntity* pLocal, CUserCmd* pCmd)
 
 	for (const auto& pEnemy : g_EntityCache.GetGroup(EGroupType::PLAYERS_ENEMIES))
 	{
-		if (!pEnemy || !pEnemy->IsAlive() || pEnemy->GetClassNum() != CLASS_SPY || pEnemy->IsCloaked() || pEnemy->IsAGhost())
+		if (!pEnemy || !pEnemy->IsAlive() || pEnemy->GetClassNum() != CLASS_SPY || pEnemy->IsCloaked() || pEnemy->IsAGhost() || pEnemy->GetFeignDeathReady())
 		{
 			continue;
+		}
+
+		if (CBaseCombatWeapon* pWeapon = pEnemy->GetActiveWeapon()){
+			if (pWeapon->GetWeaponID() != TF_WEAPON_KNIFE) { continue; }
+		}
+
+		PlayerInfo_t pInfo{};
+		if (!I::EngineClient->GetPlayerInfo(pEnemy->GetIndex(), &pInfo)){
+			if (G::IsIgnored(pInfo.friendsID)) { continue; }
 		}
 
 		Vec3 vEnemyPos = pEnemy->GetWorldSpaceCenter();
@@ -365,14 +380,15 @@ void CMisc::EdgeJump(CUserCmd* pCmd, const int nOldGroundEnt)
 
 void CMisc::FastAccel(CUserCmd* pCmd, CBaseEntity* pLocal, bool* pSendPacket)
 {
+	bFastAccel = false;
 	static bool flipVar = false;
 	flipVar = !flipVar;
 	
-	if ((G::AAActive || Vars::Misc::FakeAccelAngle.Value) && !flipVar && !G::ShouldShift){
+	if ((G::AAActive || Vars::Misc::FakeAccelAngle.Value) && !flipVar){
 		return;
 	}
 
-	const bool bShouldAccel = G::ShouldShift ? Vars::Misc::CL_Move::AntiWarp.Value : Vars::Misc::FastAccel.Value;
+	const bool bShouldAccel = !G::ShouldShift && Vars::Misc::FastAccel.Value;
 	const bool bShouldAccelFinal = pLocal->IsDucking() ? Vars::Misc::CrouchSpeed.Value : bShouldAccel;
 	if (!bShouldAccelFinal) {
 		return;
@@ -419,28 +435,9 @@ void CMisc::FastAccel(CUserCmd* pCmd, CBaseEntity* pLocal, bool* pSendPacket)
 		pCmd->sidemove = 0.0f;
 		pCmd->viewangles.y = fmodf(pCmd->viewangles.y - angMoveReverse.y, 360.0f);	//	this doesn't have to be clamped inbetween 180 and -180 because the engine automatically fixes it.
 		pCmd->viewangles.z = 270.f;
-		G::UpdateView = false;
+		G::UpdateView = false; bFastAccel = true;
 		if (Vars::Misc::FakeAccelAngle.Value) {
 			*pSendPacket = false;
-		}
-	}
-}
-
-void CMisc::DoubleTapLogic(CUserCmd* pCmd, CBaseEntity* pLocal){
-	if (G::WaitForShift && Vars::Misc::CL_Move::WaitForDT.Value) { return; }
-	if (G::ShouldShift) { return; }
-	if (!pLocal->IsAlive()) { return; }
-
-	if (
-			(Vars::Misc::CL_Move::DTMode.Value == 0 && GetAsyncKeyState(Vars::Misc::CL_Move::DoubletapKey.Value)) ||
-			(Vars::Misc::CL_Move::DTMode.Value == 1) ||
-			(Vars::Misc::CL_Move::DTMode.Value == 2 && !GetAsyncKeyState(Vars::Misc::CL_Move::DoubletapKey.Value)))
-		{
-		if (pCmd) {
-			if (G::IsAttacking || (G::CurWeaponType == EWeaponType::MELEE && pCmd->buttons & IN_ATTACK))
-			{
-				G::ShouldShift = Vars::Misc::CL_Move::NotInAir.Value ? pLocal->OnSolid() : true;
-			}
 		}
 	}
 }
@@ -477,9 +474,11 @@ void CMisc::AccurateMovement(CUserCmd* pCmd, CBaseEntity* pLocal)
 	const float speed = pLocal->GetVecVelocity().Length2D();
 	const float speedLimit = 10.f;
 
+	const int iStopMode = (Vars::Misc::AccurateMovement.Value == 3) ? (G::ShiftedTicks ? 1 : 2) : Vars::Misc::AccurateMovement.Value;
+
 	if (speed > speedLimit)
 	{
-		switch (Vars::Misc::AccurateMovement.Value) {
+		switch (iStopMode) {
 		case 1: {
 			Vec3 direction = pLocal->GetVecVelocity().toAngle();
 			direction.y = pCmd->viewangles.y - direction.y;

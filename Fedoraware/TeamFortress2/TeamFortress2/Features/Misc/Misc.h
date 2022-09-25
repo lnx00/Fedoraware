@@ -13,14 +13,17 @@ class CMisc {
 	void LegJitter(CUserCmd* pCmd, CBaseEntity* pLocal);
 	void ViewmodelFlip(CUserCmd* pCmd, CBaseEntity* pLocal);
 	void AutoPeek(CUserCmd* pCmd, CBaseEntity* pLocal);
+	void StopMovement(CUserCmd* pCmd, bool *pSendPacket);
 
 	void AntiAFK(CUserCmd* pCmd);
 	void ChatSpam();
 	void CheatsBypass();
 	void PingReducer();
-	void ServerHitbox();
 	void WeaponSway();
 	void DetectChoke();
+	void ChokeCheck(bool* pSendPacket);
+	void DoubletapPacket(bool* pSendPacket);
+	void EdgeJump(CUserCmd* pCmd, const int nOldGroundEnt);
 
 	void PrintProjAngles(CBaseEntity* pLocal);
 
@@ -29,19 +32,22 @@ class CMisc {
 	void AutoRocketJump(CUserCmd* pCmd, CBaseEntity* pLocal);
 	void AutoScoutJump(CUserCmd* pCmd, CBaseEntity* pLocal);
 	void FastAccel(CUserCmd* pCmd, CBaseEntity* pLocal, bool* pSendPacket);
-	void DoubleTapLogic(CUserCmd* pCmd, CBaseEntity* pLocal);
 	float m_flSpinYaw = 0.f;
 	
 	bool SteamCleared = false;
 public:
 	bool TauntControl(CUserCmd* pCmd);
-	void Run(CUserCmd* pCmd);
-	void RunLate(CUserCmd* pCmd, bool* pSendPacket);
+	void RunPre(CUserCmd* pCmd, bool* pSendPacket);
+	void RunMid(CUserCmd* pCmd, const int nOldGroundEnt);
+	void RunPost(CUserCmd* pCmd, bool* pSendPacket);
 
 	void SteamRPC();
 	void UnlockAchievements();
 	void LockAchievements();
-	void EdgeJump(CUserCmd* pCmd, const int nOldGroundEnt);
+
+	bool bAntiWarp = false;
+	bool bFastAccel = false;
+	bool bMovementStopped = false;
 
 	Vec3 PeekReturnPos;
 };
