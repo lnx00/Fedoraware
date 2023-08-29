@@ -17,12 +17,12 @@
 #define SAVE_OTHER(x) SaveJson(#x, x)
 #define LOAD_OTHER(x) LoadJson(#x, x)
 
-nlohmann::json WriteTreeNew{};
-nlohmann::json ReadTreeNew{};
+nlohmann::json WriteTree{};
+nlohmann::json ReadTree{};
 
 /* Conversion functions */
 
-nlohmann::json ColorToTreeNew(Color_t color)
+nlohmann::json ColorToTree(Color_t color)
 {
 	nlohmann::json colorTree;
 	colorTree["r"] = color.r;
@@ -33,7 +33,7 @@ nlohmann::json ColorToTreeNew(Color_t color)
 	return colorTree;
 }
 
-void TreeToColorNew(const nlohmann::json& tree, Color_t& color)
+void TreeToColor(const nlohmann::json& tree, Color_t& color)
 {
 	tree.at("r").get_to(color.r);
 	tree.at("g").get_to(color.g);
@@ -41,7 +41,7 @@ void TreeToColorNew(const nlohmann::json& tree, Color_t& color)
 	tree.at("a").get_to(color.a);
 }
 
-nlohmann::json VecToTreeNew(const Vec3& vec)
+nlohmann::json VecToTree(const Vec3& vec)
 {
 	nlohmann::json vecTree;
 	vecTree["x"] = vec.x;
@@ -51,7 +51,7 @@ nlohmann::json VecToTreeNew(const Vec3& vec)
 	return vecTree;
 }
 
-void TreeToVecNew(const nlohmann::json& tree, Vec3& vec)
+void TreeToVec(const nlohmann::json& tree, Vec3& vec)
 {
 	tree.at("x").get_to(vec.x);
 	tree.at("y").get_to(vec.y);
@@ -62,41 +62,41 @@ void TreeToVecNew(const nlohmann::json& tree, Vec3& vec)
 
 void CConfigManager::SaveJson(const char* name, bool val)
 {
-	WriteTreeNew[name] = val;
+	WriteTree[name] = val;
 }
 
 void CConfigManager::SaveJson(const char* name, const std::string& val)
 {
-	WriteTreeNew[name] = val;
+	WriteTree[name] = val;
 }
 
 void CConfigManager::SaveJson(const char* name, int val)
 {
-	WriteTreeNew[name] = val;
+	WriteTree[name] = val;
 }
 
 void CConfigManager::SaveJson(const char* name, float val)
 {
-	WriteTreeNew[name] = val;
+	WriteTree[name] = val;
 }
 
 void CConfigManager::SaveJson(const char* name, Color_t val)
 {
-	WriteTreeNew[name] = ColorToTreeNew(val);
+	WriteTree[name] = ColorToTree(val);
 }
 
 void CConfigManager::SaveJson(const char* name, Gradient_t val)
 {
 	nlohmann::json gradientTreeNew;
-	gradientTreeNew["startColour"] = ColorToTreeNew(val.startColour);
-	gradientTreeNew["endColour"] = ColorToTreeNew(val.endColour);
+	gradientTreeNew["startColour"] = ColorToTree(val.startColour);
+	gradientTreeNew["endColour"] = ColorToTree(val.endColour);
 
-	WriteTreeNew[name] = gradientTreeNew;
+	WriteTree[name] = gradientTreeNew;
 }
 
 void CConfigManager::SaveJson(const char* name, const Vec3& val)
 {
-	WriteTreeNew[name] = VecToTreeNew(val);
+	WriteTree[name] = VecToTree(val);
 }
 
 void CConfigManager::SaveJson(const char* name, const Chams_t& val)
@@ -110,12 +110,12 @@ void CConfigManager::SaveJson(const char* name, const Chams_t& val)
 	chamTreeNew["overlayRainbow"] = val.overlayRainbow;
 	chamTreeNew["overlayPulse"] = val.overlayPulse;
 	chamTreeNew["overlayIntensity"] = val.overlayIntensity;
-	chamTreeNew["fresnelBase"] = ColorToTreeNew(val.fresnelBase);
-	chamTreeNew["colour"] = ColorToTreeNew(val.colour);
-	chamTreeNew["overlayColour"] = ColorToTreeNew(val.overlayColour);
+	chamTreeNew["fresnelBase"] = ColorToTree(val.fresnelBase);
+	chamTreeNew["colour"] = ColorToTree(val.colour);
+	chamTreeNew["overlayColour"] = ColorToTree(val.overlayColour);
 	chamTreeNew["customMaterial"] = val.customMaterial;
 
-	WriteTreeNew[name] = chamTreeNew;
+	WriteTree[name] = chamTreeNew;
 }
 
 void CConfigManager::SaveJson(const char* name, const DragBox_t& val)
@@ -127,14 +127,14 @@ void CConfigManager::SaveJson(const char* name, const DragBox_t& val)
 	dragBoxTreeNew["h"] = val.h;
 	dragBoxTreeNew["c"] = val.c;
 
-	WriteTreeNew[name] = dragBoxTreeNew;
+	WriteTree[name] = dragBoxTreeNew;
 }
 
 void CConfigManager::LoadJson(const char* name, std::string& val)
 {
 	try
 	{
-		ReadTreeNew.at(name).get_to(val);
+		ReadTree.at(name).get_to(val);
 	} catch (...) { }
 }
 
@@ -156,7 +156,7 @@ void CConfigManager::LoadJson(const char* name, bool& val)
 {
 	try
 	{
-		GetBoolSafe(ReadTreeNew.at(name), val);
+		GetBoolSafe(ReadTree.at(name), val);
 	} catch (...)
 	{
 		std::printf("shit");
@@ -167,7 +167,7 @@ void CConfigManager::LoadJson(const char* name, int& val)
 {
 	try
 	{
-		ReadTreeNew.at(name).get_to(val);
+		ReadTree.at(name).get_to(val);
 	} catch (...) { }
 }
 
@@ -175,7 +175,7 @@ void CConfigManager::LoadJson(const char* name, float& val)
 {
 	try
 	{
-		ReadTreeNew.at(name).get_to(val);
+		ReadTree.at(name).get_to(val);
 	} catch (...) { }
 }
 
@@ -183,7 +183,7 @@ void CConfigManager::LoadJson(const char* name, Color_t& val)
 {
 	try
 	{
-		TreeToColorNew(ReadTreeNew[name], val);
+		TreeToColor(ReadTree[name], val);
 	} catch (...) { }
 }
 
@@ -191,9 +191,9 @@ void CConfigManager::LoadJson(const char* name, Gradient_t& val)
 {
 	try
 	{
-		const auto& gradientTree = ReadTreeNew.at(name);
-		TreeToColorNew(gradientTree.at("startColour"), val.startColour);
-		TreeToColorNew(gradientTree.at("endColour"), val.endColour);
+		const auto& gradientTree = ReadTree.at(name);
+		TreeToColor(gradientTree.at("startColour"), val.startColour);
+		TreeToColor(gradientTree.at("endColour"), val.endColour);
 	} catch (...) { }
 }
 
@@ -201,7 +201,7 @@ void CConfigManager::LoadJson(const char* name, Vec3& val)
 {
 	try
 	{
-		TreeToVecNew(ReadTreeNew[name], val);
+		TreeToVec(ReadTree[name], val);
 	} catch (...) { }
 }
 
@@ -209,7 +209,7 @@ void CConfigManager::LoadJson(const char* name, Chams_t& val)
 {
 	try
 	{
-		const auto& chamTree = ReadTreeNew.at(name);
+		const auto& chamTree = ReadTree.at(name);
 		GetBoolSafe(chamTree.at("showObstructed"), val.showObstructed);
 		chamTree.at("drawMaterial").get_to(val.drawMaterial);
 		chamTree.at("overlayType").get_to(val.overlayType);
@@ -218,9 +218,9 @@ void CConfigManager::LoadJson(const char* name, Chams_t& val)
 		GetBoolSafe(chamTree.at("overlayRainbow"), val.overlayRainbow);
 		GetBoolSafe(chamTree.at("overlayPulse"), val.overlayPulse);
 		chamTree.at("overlayIntensity").get_to(val.overlayIntensity);
-		TreeToColorNew(chamTree.at("fresnelBase"), val.fresnelBase);
-		TreeToColorNew(chamTree.at("colour"), val.colour);
-		TreeToColorNew(chamTree.at("overlayColour"), val.overlayColour);
+		TreeToColor(chamTree.at("fresnelBase"), val.fresnelBase);
+		TreeToColor(chamTree.at("colour"), val.colour);
+		TreeToColor(chamTree.at("overlayColour"), val.overlayColour);
 		chamTree.at("customMaterial").get_to(val.customMaterial);
 	} catch (...) { }
 }
@@ -229,7 +229,7 @@ void CConfigManager::LoadJson(const char* name, DragBox_t& val)
 {
 	try
 	{
-		const auto& dragTree = ReadTreeNew.at(name);
+		const auto& dragTree = ReadTree.at(name);
 		dragTree.at("x").get_to(val.x);
 		dragTree.at("y").get_to(val.y);
 		dragTree.at("w").get_to(val.w);
@@ -276,7 +276,7 @@ bool CConfigManager::SaveConfig(const std::string& configName)
 {
 	try
 	{
-		WriteTreeNew.clear();
+		WriteTree.clear();
 
 		SAVE_VAR(Vars::Menu::MenuKey);
 
@@ -647,8 +647,8 @@ bool CConfigManager::SaveConfig(const std::string& configName)
 			SAVE_OTHER(Vars::Menu::ShowKeybinds);
 		}
 
-		auto outStream = std::ofstream(ConfigPath + "\\nl_" + configName + ConfigExtension);
-		outStream << std::setw(2) << WriteTreeNew;
+		auto outStream = std::ofstream(ConfigPath + "\\" + configName + ConfigExtension);
+		outStream << std::setw(2) << WriteTree;
 		outStream.close();
 
 		F::Notifications.Add("Config " + configName + " saved");
@@ -672,9 +672,9 @@ bool CConfigManager::LoadConfig(const std::string& configName)
 	// Read ptree from json
 	try
 	{
-		ReadTreeNew.clear();
+		ReadTree.clear();
 		std::ifstream inStream(ConfigPath + "\\" + configName + ConfigExtension);
-		ReadTreeNew = nlohmann::json::parse(inStream);
+		ReadTree = nlohmann::json::parse(inStream);
 
 		// Menu
 		{
@@ -1062,7 +1062,7 @@ bool CConfigManager::SaveVisual(const std::string& configName)
 {
 	try
 	{
-		WriteTreeNew.clear();
+		WriteTree.clear();
 		
 		SAVE_OTHER(Vars::Menu::CheatName);
 		SAVE_OTHER(Vars::Menu::CheatPrefix);
@@ -1421,8 +1421,8 @@ bool CConfigManager::SaveVisual(const std::string& configName)
 		SAVE_VAR(Vars::Fonts::FONT_INDICATORS::nWeight);
 		SAVE_VAR(Vars::Fonts::FONT_INDICATORS::nFlags);
 
-		auto outStream = std::ofstream(ConfigPath + "\\nl_" + configName + ConfigExtension);
-		outStream << std::setw(2) << WriteTreeNew;
+		auto outStream = std::ofstream(ConfigPath + "\\Visuals\\" + configName + ConfigExtension);
+		outStream << std::setw(2) << WriteTree;
 		outStream.close();
 
 		F::Notifications.Add("Visual config " + configName + " saved");
@@ -1444,9 +1444,9 @@ bool CConfigManager::LoadVisual(const std::string& configName)
 
 	try
 	{
-		ReadTreeNew.clear();
+		ReadTree.clear();
 		std::ifstream inStream(ConfigPath + "\\Visuals\\" + configName + ConfigExtension);
-		ReadTreeNew = nlohmann::json::parse(inStream);
+		ReadTree = nlohmann::json::parse(inStream);
 
 		LOAD_OTHER(Vars::Menu::CheatName);
 		LOAD_OTHER(Vars::Menu::CheatPrefix);
