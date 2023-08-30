@@ -1,8 +1,6 @@
 #include "Commands.h"
 
 #include <utility>
-#include <boost/algorithm/string/replace.hpp>
-#include <boost/algorithm/string/join.hpp>
 
 #include "../../Features/Chams/DMEChams.h"
 
@@ -66,8 +64,10 @@ void CCommands::Init()
 
 				 // Set the CVar to the given value
 				 args.pop_front();
-				 std::string newValue = boost::algorithm::join(args, " ");
-				 boost::replace_all(newValue, "\"", "");
+				 // std::string newValue = boost::algorithm::join(args, " ");
+				 // boost::replace_all(newValue, "\"", "");
+				 // TODO: FIX THIS!!!!
+				 const std::string newValue = "0";
 				 foundCVar->SetValue(newValue.c_str());
 				 I::Cvar->ConsoleColorPrintf({ 255, 255, 255, 255 }, "Set %s to: %s\n", cvarName.c_str(), newValue.c_str());
 			 });

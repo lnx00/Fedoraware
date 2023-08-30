@@ -2,7 +2,6 @@
 
 #include <fstream>
 #include <filesystem>
-#include <boost/algorithm/string/replace.hpp>
 
 const char* ClassToString(const int nClass)
 {
@@ -151,8 +150,9 @@ void CKillsay::FireGameEvent(FNV1A_t uNameHash, CGameEvent* pEvent)
 		const char* szName = pi.name;
 		int nClass = pEntity->GetClassNum();
 
-		boost::replace_all(selectedKillsay, "%victim%", szName);
-		boost::replace_all(selectedKillsay, "%class%", ClassToString(nClass));
+		// TODO: Use std::format
+		//boost::replace_all(selectedKillsay, "%victim%", szName);
+		//boost::replace_all(selectedKillsay, "%class%", ClassToString(nClass));
 
 		const std::string cmd = "say \"" + selectedKillsay + "\"";
 		I::EngineClient->ServerCmd(cmd.c_str(), true);

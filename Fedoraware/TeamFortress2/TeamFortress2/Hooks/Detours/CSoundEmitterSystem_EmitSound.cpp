@@ -1,5 +1,4 @@
 #include "../Hooks.h"
-#include <boost/algorithm/string.hpp>
 
 const static std::vector<std::string> NOISEMAKER_SOUNDS{ "items/halloween", "items/football_manager", "items/japan_fundraiser", "items/samurai", "items/summer", "misc/happy_birthday_tf", "misc/jingle_bells" };
 // TODO: Do the names contain / or \ ?
@@ -10,7 +9,8 @@ MAKE_HOOK(CSoundEmitterSystem_EmitSound, g_Pattern.Find(L"client.dll", L"55 8B E
 	if (ep.m_pSoundName)
 	{
 		std::string soundName(ep.m_pSoundName);
-		boost::algorithm::to_lower(soundName);
+		//boost::algorithm::to_lower(soundName);
+		Utils::ToLower(soundName);
 
 		// Footsteps
 		if (Vars::Misc::SoundBlock.Value & (1 << 0))

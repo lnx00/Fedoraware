@@ -7,8 +7,6 @@
 #include "../ImGui/imgui_internal.h"
 
 #include <mutex>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
 
 const char* resolveListPitch[]{ "None", "Up", "Down", "Zero", "Auto" };
 const char* resolveListYaw[]{ "None", "Forward", "Backward", "Left", "Right", "Invert", "Edge", "Auto" };
@@ -286,7 +284,7 @@ void CPlayerList::Save()
 {
 	try
 	{
-		boost::property_tree::ptree writeTree;
+		/*boost::property_tree::ptree writeTree;
 
 		// Put map entries into ptree
 		for (const auto& [user, prio] : G::PlayerPriority)
@@ -298,7 +296,7 @@ void CPlayerList::Save()
 		}
 
 		// Save the file
-		write_json(g_CFG.GetConfigPath() + "\\Core\\Playerlist.json", writeTree);
+		write_json(g_CFG.GetConfigPath() + "\\Core\\Playerlist.json", writeTree);*/
 	}
 	catch (...) {}
 }
@@ -307,7 +305,7 @@ void CPlayerList::Load()
 {
 	try
 	{
-		boost::property_tree::ptree readTree;
+		/*boost::property_tree::ptree readTree;
 		read_json(g_CFG.GetConfigPath() + "\\Core\\Playerlist.json", readTree);
 		G::PlayerPriority.clear();
 
@@ -322,7 +320,7 @@ void CPlayerList::Load()
 			}
 
 			G::PlayerPriority[userID] = prio;
-		}
+		}*/
 	}
 	catch (...) {}
 }

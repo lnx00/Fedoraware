@@ -3,8 +3,6 @@
 #include "../../Features/Misc/Misc.h"
 #include "../../Features/ChatInfo/ChatInfo.h"
 
-#include <boost/algorithm/string/replace.hpp>
-#include <boost/algorithm/string/predicate.hpp>
 #include "../../Features/Visuals/Visuals.h"
 
 static int anti_balance_attempts = 0;

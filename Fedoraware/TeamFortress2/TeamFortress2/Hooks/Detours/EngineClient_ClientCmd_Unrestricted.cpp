@@ -1,7 +1,5 @@
 #include "../Hooks.h"
 
-
-#include <boost/algorithm/string/split.hpp> // Include for boost::split
 #include "../../Features/Menu/MaterialEditor/MaterialEditor.h"
 #include "../../Features/Commands/Commands.h"
 #include "../../Features/Chams/DMEChams.h"
@@ -32,7 +30,10 @@ MAKE_HOOK(EngineClient_ClientCmd_Unrestricted, Utils::GetVFuncPtr(I::EngineClien
 	std::deque<std::string> cmdArgs;
 
 	// Yes I will use boost for this
-	boost::split(cmdArgs, cmdString, split_q());
+	//boost::split(cmdArgs, cmdString, split_q());
+	// TODO: Return a deque in SplitString
+	auto cmdArgsVec = Utils::SplitString(cmdString, " ");
+	std::ranges::move(cmdArgsVec, std::back_inserter(cmdArgs));
 
 	if (!cmdArgs.empty())
 	{

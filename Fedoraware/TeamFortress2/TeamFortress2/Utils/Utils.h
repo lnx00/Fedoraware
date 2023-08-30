@@ -177,6 +177,11 @@ namespace Utils
 		return strings;
 	}
 
+	inline void ToLower(std::string& str)
+	{
+		for (auto& c : str) { c = tolower(c); }
+	}
+
 	inline Vec3 GetRotatedPosition(Vec3 vOrigin, const float flRotation, const float flDistance)
 	{
 		const auto rad = DEG2RAD(flRotation);
