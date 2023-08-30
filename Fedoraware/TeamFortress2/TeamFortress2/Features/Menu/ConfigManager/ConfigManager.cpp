@@ -20,15 +20,31 @@
 nlohmann::json WriteTree{};
 nlohmann::json ReadTree{};
 
+/* Utils */
+
+// Backwards compatibility
+void GetBoolSafe(const nlohmann::json& item, bool& val)
+{
+	if (item.is_boolean())
+	{
+		item.get_to(val);
+	}
+	else
+	{
+		const std::string value = item.get<std::string>();
+		val = (value == "true");
+	}
+}
+
 /* Conversion functions */
 
-nlohmann::json ColorToTree(Color_t color)
+nlohmann::json ColorToTree(const Color_t& color)
 {
 	nlohmann::json colorTree;
 	colorTree["r"] = color.r;
-	colorTree["g"] = color.r;
-	colorTree["b"] = color.r;
-	colorTree["a"] = color.r;
+	colorTree["g"] = color.g;
+	colorTree["b"] = color.b;
+	colorTree["a"] = color.a;
 
 	return colorTree;
 }
@@ -136,20 +152,6 @@ void CConfigManager::LoadJson(const char* name, std::string& val)
 	{
 		ReadTree.at(name).get_to(val);
 	} catch (...) { }
-}
-
-// Backwards compatibility
-void GetBoolSafe(const nlohmann::json& item, bool& val)
-{
-	if (item.is_boolean())
-	{
-		item.get_to(val);
-	}
-	else
-	{
-		const std::string value = item.get<std::string>();
-		val = (value == "true");
-	}
 }
 
 void CConfigManager::LoadJson(const char* name, bool& val)
